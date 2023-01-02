@@ -1,0 +1,26 @@
+services:
+  vault:
+    image: vault
+    cap_add:
+      - IPC_LOCK      
+    volumes:
+      - "./vault.hcl:/vault/config.d/vault.hcl"
+      - ".vault:/vault/file"
+    environment:
+      - VAULT_DEV_ROOT_TOKEN_ID=myspace
+      - VAULT_API_ADDR=ihttp://0.0.0.0:80
+  ipfs:
+    image: ipfs/kubo
+    volumes:
+      - "./.export:/export"
+      - "./.ipfs:/data/ipfs"
+  myspace:
+    image: bahner/myspace:dev
+    environment:
+      - MIX_ENV=docker
+      - NODE_NAME
+    ports:
+      - "${SSH_PORT}:10022"
+    volumes:
+      - "./docker.exs:/app/config/docker.exs"
+    command: sh -c "mix local.rebar --force && elixir --sname ${NODE_NAME} -S mix run --no-halt"
